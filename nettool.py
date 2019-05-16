@@ -4,6 +4,7 @@ import subprocess
 import re
 import _thread as thread
 import time
+import socket
 
 #TODO:
 #regex to get // check domain
@@ -35,6 +36,15 @@ def pingOnly(threadName, delay, address):
         print(str(threadName) + " " + str(p.communicate()[0]))
         time.sleep(delay)
 
+def portCheck(address, port):
+    #REMOTE_SERVER = address
+    try:
+        host= socket.gethostbyname(address)
+        s = socket.create_connection((host, port), 2)
+        return True
+    except:
+        pass
+    return False
 
 def main():
     print("type !h to list all Commands")
@@ -50,8 +60,13 @@ def main():
             addr = input("domain")
             rpings = rpings + 1
             #thread.start_new_thread(pingOnly, ("ping" + str(rpings),10,addr))
-        thread.start_new_thread(pingOnly, ("ping2", 3, "www.devbaka.de"))
-        thread.start_new_thread(pingOnly, ("ping1", 3, "www.google.de"))
+        if(key == "!tping"):
+            thread.start_new_thread(pingOnly, ("ping2", 3, "www.devbaka.de"))
+            thread.start_new_thread(pingOnly, ("ping1", 3, "www.google.de"))
+        if(key == "!port"):
+            addr = input("domain")
+            port = int(input("port"))
+            print("port " + str(port) + " is " + str(portCheck(addr, port)) + " on host " + addr)
 
 
             #pingOnly(addr)
