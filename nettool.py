@@ -5,6 +5,8 @@ import re
 import _thread as thread
 import time
 import socket
+import getopt
+import argparse, sys
 
 #TODO:
 #regex to get // check domain
@@ -14,6 +16,14 @@ import socket
 #multithreading for multiple pings
 #get all ips/hosts from the network with subnets
 #maybe a little gui to show all infos
+#nice regex but didnt work  ^PING\b[^(]*\(([^)]*)\)\s([^.]*)\..*?^(\d+\sbytes).*?icmp_seq=(\d+).*?ttl=(\d+).*?time=(.*?ms).*?(\d+)\spackets\stransmitted.*?(\d+)\sreceived.*?(\d+%)\spacket\sloss.*?time\s(\d+ms).*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*?)\sms
+#https://rubular.com/r/uEDoEZwY7U
+
+#mittelwert vom packet loss und von der latenz(ms) berechnen lassen
+#alle hosts im netzwerk gleichzeitig/durchgehend anpingen
+#übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
+
+
 
 def help():
     print(" type !h to show this help")
@@ -34,12 +44,27 @@ def pingOnly(threadName, delay, address):
 
         p = subprocess.Popen(["ping", address, "-c 1"], stdout = subprocess.PIPE)
         out = str(p.communicate()[0])
-        #print(str(threadName) + " " + out)
+        print(str(threadName) + " " + out)
         #m = re.findall(r'\s(?:www.)?(\w+.com)', str(p.communicate()[0]))
         domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
+        #data = re.findall(r'^PING\b[^(]*\(([^)]*)\)\s([^.]*)\..*?^(\d+\sbytes).*?icmp_seq=(\d+).*?ttl=(\d+).*?time=(.*?ms).*?(\d+)\spackets\stransmitted.*?(\d+)\sreceived.*?(\d+%)\spacket\sloss.*?time\s(\d+ms).*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*?)\sms', out)
         #ttl = re.search(r'(?:ttl=[0-9]*)?', out)
-        ttl = re.findall(r'(?:time=([0-9]*.[0-9] ms))?', out)
-        print("domain: " + str(domain) + " ttl: " + str(ttl))
+        #ttl = re.findall(r'(?:time=([0-9]*.[0-9] ms))?', out)
+        #print("domain: " + str(domain) + " ttl: " + str(ttl))
+        #ttltime = re.findall(r'ttl=(\d+).*?rtt min\/avg\/max\/mdev = ([0-9.]+)\/', out)  # works
+        #ptime = re.findall(r'ttl=(\d+).*?rtt min\/avg\/max\/mdev = ([0-9.]+)\/', out)
+        #print("ttltime: " + str(ttltime)) #works
+        #print("time: " + str(ptime))
+        #data = re.findall(r"PING\b[^(]*\(([^)]*)\)\s([^.]*)\..*?^(\d+\sbytes).*?icmp_seq=(\d+).*?ttl=(\d+).*?time=(.*?ms).*?(\d+)\spackets\stransmitted.*?(\d+)\sreceived.*?(\d+%)\spacket\sloss.*?time\s(\d+ms).*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*?)\sms", out)
+        icmp = re.findall(r'<?icmp_seq=(\d+)', out)
+        ptime = re.findall(r'<?time=([0-9]*.[0-9])', out)
+        plost = re.findall(r'<?([0-9]*%)', out)
+        rip = re.findall(r'\d+\.\d+\.\d+\.\d+', out)
+        print("time: " + str(ptime[0]) + "ms")
+        print("icmp: " + str(icmp[0]))
+        print("packet lost: " + str(plost[0]))
+        print("ip: " + str(rip[0]))
+        print("domain: " + str(domain[0][0]))
         time.sleep(delay)
 
 def portCheck(address, port):
@@ -52,7 +77,7 @@ def portCheck(address, port):
         pass
     return False
 
-def main():
+def main2():
     print("type !h to list all Commands")
     ping("google.de")
 
@@ -78,6 +103,49 @@ def main():
             #pingOnly(addr)
     #ping()
 
+def main3(argv):
+    domain = ""
+    ipaddr = "0.0.0.0"
+    subnet = "0"
+    try:
+        opts, args = getopt.getopt(argv,"di:s:",["domain=","ip=","subnet="])
+    except getopt.GetoptError:
+        print('nettool.py -h')
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt == "-h":
+            help()
+            sys.exit()
+        elif opt in("-d", "--domain"):
+            domain = arg
+            print("domain: " + domain + " arg: " + str(arg))
+            pingOnly("ping1", 1,domain)
+        elif opt in ("-s", "--subnet"):
+            subnet = arg
+        elif opt in ("-i", "--ip"):
+            ipaddr = arg
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--domain", help='set the Domain')
+    parser.add_argument("--ip", help="set the ip")
+    parser.add_argument("--subnet", help="set the subnet")
+    #parser.add_argument("--help", help="show the help")
+
+    args= parser.parse_args()
+    print(args)
+    print(sys)
+
+    if args.domain != "":
+        print(args.domain)
+        pingOnly("ping1", 1, args.domain)
+
+
 if __name__ == '__main__':
-    main()
+    #main()
+    main3(sys.argv[1:])
+    #main()
 
