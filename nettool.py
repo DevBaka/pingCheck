@@ -18,6 +18,8 @@ import argparse, sys
 #maybe a little gui to show all infos
 #nice regex but didnt work  ^PING\b[^(]*\(([^)]*)\)\s([^.]*)\..*?^(\d+\sbytes).*?icmp_seq=(\d+).*?ttl=(\d+).*?time=(.*?ms).*?(\d+)\spackets\stransmitted.*?(\d+)\sreceived.*?(\d+%)\spacket\sloss.*?time\s(\d+ms).*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*?)\sms
 #https://rubular.com/r/uEDoEZwY7U
+#regex test: https://rubular.com/r/uEDoEZwY7U
+#curses: https://de.wikibooks.org/wiki/Python_unter_Linux:_Curses
 
 #mittelwert vom packet loss und von der latenz(ms) berechnen lassen
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
