@@ -33,7 +33,13 @@ def pingOnly(threadName, delay, address):
     while c != 1:
 
         p = subprocess.Popen(["ping", address, "-c 1"], stdout = subprocess.PIPE)
-        print(str(threadName) + " " + str(p.communicate()[0]))
+        out = str(p.communicate()[0])
+        #print(str(threadName) + " " + out)
+        #m = re.findall(r'\s(?:www.)?(\w+.com)', str(p.communicate()[0]))
+        domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
+        #ttl = re.search(r'(?:ttl=[0-9]*)?', out)
+        ttl = re.findall(r'(?:time=([0-9]*.[0-9] ms))?', out)
+        print("domain: " + str(domain) + " ttl: " + str(ttl))
         time.sleep(delay)
 
 def portCheck(address, port):
@@ -62,7 +68,7 @@ def main():
             #thread.start_new_thread(pingOnly, ("ping" + str(rpings),10,addr))
         if(key == "!tping"):
             thread.start_new_thread(pingOnly, ("ping2", 3, "www.devbaka.de"))
-            thread.start_new_thread(pingOnly, ("ping1", 3, "www.google.de"))
+            thread.start_new_thread(pingOnly, ("ping1", 3, "google.com"))
         if(key == "!port"):
             addr = input("domain")
             port = int(input("port"))
