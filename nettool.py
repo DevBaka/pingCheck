@@ -9,6 +9,7 @@ import time
 import socket
 import getopt
 import argparse, sys
+import threading
 
 #TODO:
 #regex to get // check domain
@@ -34,7 +35,7 @@ ips = []
 def help():
     print(" type !h to show this help")
 
-def ping(address):
+def pingOLD(address):
     print("test")
     p = subprocess.Popen(["ping", "www.google.de", "-c 1"], stdout = subprocess.PIPE)
     #m = re.search("/(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/g", p.communicate()[0])
@@ -52,7 +53,7 @@ def pingOnly(threadName, delay, address):
         out = str(p.communicate()[0])
         print(str(threadName) + " " + out)
         #m = re.findall(r'\s(?:www.)?(\w+.com)', str(p.communicate()[0]))
-        domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
+
         #data = re.findall(r'^PING\b[^(]*\(([^)]*)\)\s([^.]*)\..*?^(\d+\sbytes).*?icmp_seq=(\d+).*?ttl=(\d+).*?time=(.*?ms).*?(\d+)\spackets\stransmitted.*?(\d+)\sreceived.*?(\d+%)\spacket\sloss.*?time\s(\d+ms).*?=\s([^\/]*)\/([^\/]*)\/([^\/]*)\/(.*?)\sms', out)
         #ttl = re.search(r'(?:ttl=[0-9]*)?', out)
         #ttl = re.findall(r'(?:time=([0-9]*.[0-9] ms))?', out)
@@ -66,17 +67,44 @@ def pingOnly(threadName, delay, address):
         ptime = re.findall(r'<?time=([0-9]*.[0-9])', out)
         plost = re.findall(r'<?([0-9]*%)', out)
         rip = re.findall(r'\d+\.\d+\.\d+\.\d+', out)
+
         print("time: " + str(ptime[0]) + "ms")
         print("icmp: " + str(icmp[0]))
         print("packet lost: " + str(plost[0]))
         print("ip: " + str(rip[0]))
         try:
+            domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
             print("domain: " + str(domain[0][0]))
         except:
             print("no domain vorhanden")
         time.sleep(delay)
 
+def ping(threadName, delay, address):
+    #time.sleep(3)
+    c = 0
+    while c != 1:
+        time.sleep(1.5)
 
+        p = subprocess.Popen(["ping", address, "-c 1"], stdout = subprocess.PIPE)
+        out = str(p.communicate()[0])
+        print(str(threadName) + " " + out)
+        icmp = re.findall(r'<?icmp_seq=(\d+)', out)
+        ptime = re.findall(r'<?time=([0-9]*.[0-9])', out)
+        plost = re.findall(r'<?([0-9]*%)', out)
+        rip = re.findall(r'\d+\.\d+\.\d+\.\d+', out)
+
+        print("time: " + str(ptime[0]) + "ms")
+        print("icmp: " + str(icmp[0]))
+        print("packet lost: " + str(plost[0]))
+        print("ip: " + str(rip[0]))
+        try:
+            domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
+            print("domain: " + str(domain[0][0]))
+        except:
+            print("no domain vorhanden")
+        #time.sleep(delay)
+
+#def ping()
 
 def portCheck(address, port):
     #REMOTE_SERVER = address
@@ -90,7 +118,7 @@ def portCheck(address, port):
 
 def main2():
     print("type !h to list all Commands")
-    ping("google.de")
+    #ping("google.de")
 
     rpings = 0
     key = input("command: ")
@@ -203,8 +231,13 @@ def main():
         print("some ip: " + str(ips[4]) + " len: " + str(len(ips)))
         if str(args.p) != "None":
             for i in range(0,len(ips)):
+                time.sleep(1)
                 #pingOnly("ping" + str(i), 1, str(ips[i]))
-                thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
+                print("ping ip: " + str(ips[i]))
+                #thread.start_new_thread(ping, ("ping" + str(i), 1, str(ips[i])))
+                #thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
+                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i])))
+                t1.start()
 
 
 if __name__ == '__main__':
