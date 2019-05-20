@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
 import subprocess
+import multiprocessing.dummy
+import multiprocessing
 import re
 import _thread as thread
 import time
@@ -20,12 +22,14 @@ import argparse, sys
 #https://rubular.com/r/uEDoEZwY7U
 #regex test: https://rubular.com/r/uEDoEZwY7U
 #curses: https://de.wikibooks.org/wiki/Python_unter_Linux:_Curses
+#nmap: https://www.programcreek.com/python/example/92225/nmap.PortScanner
 
 #mittelwert vom packet loss und von der latenz(ms) berechnen lassen
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
 #übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
 
 
+ips = []
 
 def help():
     print(" type !h to show this help")
@@ -66,8 +70,13 @@ def pingOnly(threadName, delay, address):
         print("icmp: " + str(icmp[0]))
         print("packet lost: " + str(plost[0]))
         print("ip: " + str(rip[0]))
-        print("domain: " + str(domain[0][0]))
+        try:
+            print("domain: " + str(domain[0][0]))
+        except:
+            print("no domain vorhanden")
         time.sleep(delay)
+
+
 
 def portCheck(address, port):
     #REMOTE_SERVER = address
@@ -128,26 +137,78 @@ def main3(argv):
         elif opt in ("-i", "--ip"):
             ipaddr = arg
 
+def getIPS(network, start, end):
+    for ping in range(start, end):
+        address = network + str(ping)
+        res = subprocess.call(['ping', '-c', '1', address])
+        if res == 0:
+            print("ping to", address, "OK")
+            ips.append(address)
+        elif res == 2:
+            print("no response from", address)
+        else:
+            print("ping to", address, "failed!")
+
+def getPing(ip):
+    success = subprocess.call(['ping', '-c', '1', ip])
+    if success:
+        print("{} responded".format(ip))
+        #ips.append(ip)
+    else:
+        print("{} did not respond".format(ip))
+        ips.append(ip)
+    return success
+
+def ping_range(network,start,end):
+    num_threads = 4 * multiprocessing.cpu_count()
+    p = multiprocessing.dummy.Pool(num_threads)
+    p.map(getPing, [network + str(x) for x in range(start,end)])
+    #ips.append(network + str(x))
+
+
 
 def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--domain", help='set the Domain')
+    parser.add_argument("-d", help='set the Domain')
     parser.add_argument("--ip", help="set the ip")
     parser.add_argument("--subnet", help="set the subnet")
+    parser.add_argument("-p", help='start Ping')
     #parser.add_argument("--help", help="show the help")
 
     args= parser.parse_args()
     print(args)
     print(sys)
 
-    if args.domain != "":
+    if str(args.domain) != "None":
         print(args.domain)
         pingOnly("ping1", 1, args.domain)
+
+    if str(args.d) != "None":
+        print(args.d)
+        pingOnly("ping2", 1, args.d)
+
+    if str(args.ip) != "None":
+        print(args.ip)
+        #getIPS(str(args.ip),0,255)
+        #thread.start_new_thread(getIPS, (str(args.ip), 0,50))
+        #thread.start_new_thread(getIPS, (str(args.ip), 51,100))
+        #thread.start_new_thread(getIPS, (str(args.ip), 101,150))
+        #thread.start_new_thread(getIPS, (str(args.ip), 151,200))
+        #thread.start_new_thread(getIPS, (str(args.ip), 201,255))
+        ping_range(str(args.ip),0,255)
+        print("ips: " + str(ips))
+        print("args.p: " + str(args.p))
+        print("some ip: " + str(ips[4]) + " len: " + str(len(ips)))
+        if str(args.p) != "None":
+            for i in range(0,len(ips)):
+                #pingOnly("ping" + str(i), 1, str(ips[i]))
+                thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
 
 
 if __name__ == '__main__':
     #main()
-    main3(sys.argv[1:])
-    #main()
+   #main3(sys.argv[1:])
+    main()
 
