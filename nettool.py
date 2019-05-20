@@ -31,6 +31,8 @@ import threading
 
 
 ips = []
+#data = [{"id":0, "ip":"here stands ips", "icmp":"icmp data", "ptime":"ptime data", "plost": "plost data", "rip": "rip data"},]
+data = {}
 
 def help():
     print(" type !h to show this help")
@@ -79,29 +81,39 @@ def pingOnly(threadName, delay, address):
             print("no domain vorhanden")
         time.sleep(delay)
 
-def ping(threadName, delay, address):
+def ping(threadName, delay, address, id):
     #time.sleep(3)
+    t = 0
     c = 0
     while c != 1:
         time.sleep(1.5)
-
+        t = t + 1
         p = subprocess.Popen(["ping", address, "-c 1"], stdout = subprocess.PIPE)
         out = str(p.communicate()[0])
-        print(str(threadName) + " " + out)
+        #print(str(threadName) + " " + out)
         icmp = re.findall(r'<?icmp_seq=(\d+)', out)
         ptime = re.findall(r'<?time=([0-9]*.[0-9])', out)
         plost = re.findall(r'<?([0-9]*%)', out)
         rip = re.findall(r'\d+\.\d+\.\d+\.\d+', out)
 
-        print("time: " + str(ptime[0]) + "ms")
-        print("icmp: " + str(icmp[0]))
-        print("packet lost: " + str(plost[0]))
-        print("ip: " + str(rip[0]))
+        #print("time: " + str(ptime[0]) + "ms")
+        #print("icmp: " + str(icmp[0]))
+        #print("packet lost: " + str(plost[0]))
+        #print("ip: " + str(rip[0]))
+
         try:
             domain = re.findall(r'\s(?:www.)?(\w+.(com|org|net|de))', out)
-            print("domain: " + str(domain[0][0]))
+            #print("domain: " + str(domain[0][0]))
+            #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip), str(domain[0][0])
+            #data[id][t] = str(t), str(icmp), str(ptime), str(rip)
+            #data.extend(id, [t, icmp, ptime, rip])
+            data[address] = str(t) + str(icmp) + str(ptime) + str(plost) + str(rip) + str(domain[0][0])
+
         except:
-            print("no domain vorhanden")
+            #print("no domain vorhanden")
+            #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip)
+            #data.extend(id,[t,icmp,ptime,rip])
+            data[address] = str(t) + str(icmp) + str(ptime) + str(plost) + str(rip)
         #time.sleep(delay)
 
 #def ping()
@@ -185,6 +197,7 @@ def getPing(ip):
     else:
         print("{} did not respond".format(ip))
         ips.append(ip)
+        #data.append(())
     return success
 
 def ping_range(network,start,end):
@@ -193,6 +206,22 @@ def ping_range(network,start,end):
     p.map(getPing, [network + str(x) for x in range(start,end)])
     #ips.append(network + str(x))
 
+def printData():
+    r = 0
+    while r != 1:
+        print("data: " + str(data))
+        print("len data: " + str(len(data)))
+        print("len ips: " + str(len(ips)))
+        #print(str(data))
+        #for i in range(len(data)):
+        #    #print("Data" + str(i) + ": " + str(data[]) + ":" + str(data[i][1]))
+        #    time.sleep(1)
+        #    for c in i:
+        #        #print("data: " + str(data[i]))
+        #        print(c, end= " ")
+        #        time.sleep(1)
+        #print("data: " + str(data))
+        time.sleep(5)
 
 
 def main():
@@ -236,8 +265,11 @@ def main():
                 print("ping ip: " + str(ips[i]))
                 #thread.start_new_thread(ping, ("ping" + str(i), 1, str(ips[i])))
                 #thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
-                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i])))
+                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
                 t1.start()
+
+            t2 = threading.Thread(target=printData)
+            t2.start()
 
 
 if __name__ == '__main__':
