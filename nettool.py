@@ -10,6 +10,7 @@ import socket
 import getopt
 import argparse, sys
 import threading
+from array import *
 
 #TODO:
 #regex to get // check domain
@@ -33,6 +34,10 @@ import threading
 ips = []
 #data = [{"id":0, "ip":"here stands ips", "icmp":"icmp data", "ptime":"ptime data", "plost": "plost data", "rip": "rip data"},]
 data = {}
+data2 = []
+pingData = {}
+pings = {}
+    #pingData[0][0] = 0
 
 def help():
     print(" type !h to show this help")
@@ -107,13 +112,20 @@ def ping(threadName, delay, address, id):
             #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip), str(domain[0][0])
             #data[id][t] = str(t), str(icmp), str(ptime), str(rip)
             #data.extend(id, [t, icmp, ptime, rip])
-            data[address] = str(t) + str(icmp) + str(ptime) + str(plost) + str(rip) + str(domain[0][0])
+            data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) +  ":" +  str(plost) + ":" + str(rip) + ":" +  str(domain[0][0])
+            pingData[address + ":" + str(pings[address][0])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
+
+
+            #pingData[address + ""]
+            #data2.append()
 
         except:
             #print("no domain vorhanden")
             #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip)
             #data.extend(id,[t,icmp,ptime,rip])
-            data[address] = str(t) + str(icmp) + str(ptime) + str(plost) + str(rip)
+            data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) + ":" + str(plost) + ":" +str(rip)
+            pingData[address + ":" + str(pings[address][0])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
+            pings[address] = pings[address][0] + 1
         #time.sleep(delay)
 
 #def ping()
@@ -209,9 +221,12 @@ def ping_range(network,start,end):
 def printData():
     r = 0
     while r != 1:
-        print("data: " + str(data))
-        print("len data: " + str(len(data)))
+        print("data: " + str(pingData))
+        print("len data: " + str(len(pingData)))
         print("len ips: " + str(len(ips)))
+        print("data1: " + str(pingData['10.0.0.1:1']))
+        #print("data1: " + str(data[0][1]))
+        #print("data2: " + str(data[2]))
         #print(str(data))
         #for i in range(len(data)):
         #    #print("Data" + str(i) + ": " + str(data[]) + ":" + str(data[i][1]))
@@ -263,6 +278,7 @@ def main():
                 time.sleep(1)
                 #pingOnly("ping" + str(i), 1, str(ips[i]))
                 print("ping ip: " + str(ips[i]))
+                pings[str(ips[i])] = 0
                 #thread.start_new_thread(ping, ("ping" + str(i), 1, str(ips[i])))
                 #thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
                 t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
