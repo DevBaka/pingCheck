@@ -113,7 +113,7 @@ def ping(threadName, delay, address, id):
             #data[id][t] = str(t), str(icmp), str(ptime), str(rip)
             #data.extend(id, [t, icmp, ptime, rip])
             data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) +  ":" +  str(plost) + ":" + str(rip) + ":" +  str(domain[0][0])
-            pingData[address + ":" + str(pings[address][0])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
+            pingData[address + ":" + str(pings[address])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
 
 
             #pingData[address + ""]
@@ -124,8 +124,9 @@ def ping(threadName, delay, address, id):
             #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip)
             #data.extend(id,[t,icmp,ptime,rip])
             data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) + ":" + str(plost) + ":" +str(rip)
-            pingData[address + ":" + str(pings[address][0])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
-            pings[address] = pings[address][0] + 1
+            print("pings[" +  str(address) +"]: " + str(pings[address]))
+            pingData[address + ":" + str(pings[address])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
+            pings[address] = pings[address] + 1
         #time.sleep(delay)
 
 #def ping()
