@@ -250,7 +250,8 @@ def printData():
                 b = 1
             #print("r:" + str(r) + "some: " + str(pingData[ips[i] + ":" + str(r)]))
             try:
-                print("i:" + ips[i] + " ping: " + str(pings[ips[i]] - 1) + ":" + str(pings[ips[i]]) + "-" + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1 )]))
+                #print("i:" + ips[i] + " ping: " + str(pings[ips[i]] - 1) + ":" + str(pings[ips[i]]) + "-" + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1 )]))
+                print("ip: " + ips[i] + ":" + str(pings[ips[i]] - 1) + " time: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]) + " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
             except:
                 print("error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1))
 
