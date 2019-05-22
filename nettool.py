@@ -10,6 +10,7 @@ import socket
 import getopt
 import argparse, sys
 import threading
+from subprocess import check_output
 from array import *
 
 #TODO:
@@ -41,6 +42,8 @@ data = {}
 data2 = []
 pingData = {}
 pings = {}
+localIPs = []
+networks = []
     #pingData[0][0] = 0
 
 def help():
@@ -207,7 +210,20 @@ def main3(argv):
             subnet = arg
         elif opt in ("-i", "--ip"):
             ipaddr = arg
-
+def getLocalIPS():
+    ips = check_output(['hostname', '--all-ip-addresses'])
+    #print("ips: " + str(ips))
+    localIPs = re.findall(r'[0-9]+(?:\.[0-9]+){3}', str(ips))
+    #print("localIPS: " + str(localIPs[0]))
+    for x in range(0, len(localIPs)):
+        #print("ip" + str(x) + ":"+ str(localIPs[x]))
+        network = ".".join(str(localIPs[x]).split(".")[0:-1]) + "."
+        #print("network: " + str(network))
+        #networks[x] = str(network)
+        networks.insert(x, str(network))
+    #print("nt: " + str(networks) + "len: " + str(len(networks)))
+    for y in range(0, len(networks)):
+        print("network"+ str(y) + ": " + str(networks[y]))
 def getIPS(network, start, end):
     for ping in range(start, end):
         address = network + str(ping)
@@ -266,6 +282,9 @@ def main():
     parser.add_argument("--ip", help="set the ip")
     parser.add_argument("--subnet", help="set the subnet")
     parser.add_argument("-p", help='start Ping')
+    parser.add_argument("--localIP", help="get local ips")
+    parser.add_argument("-lip", help="get local ips")
+    parser.add_argument("-a", help="auto scan")
     #parser.add_argument("--help", help="show the help")
 
     args= parser.parse_args()
@@ -279,6 +298,30 @@ def main():
     if str(args.d) != "None":
         print(args.d)
         pingOnly("ping2", 1, args.d)
+
+    #if str(args.l) != "None":
+    #    getLocalIPS()
+
+    if str(args.localIP) != "None":
+        getLocalIPS()
+
+
+    if str(args.a) != "None":
+        getLocalIPS()
+        print("start")
+        for y in range(0, len(networks)):
+            print("network" + str(y) + ": " + str(networks[y]))
+            ping_range(networks[y], 0, 255)
+        print("allIPS: " + str(ips))
+        if(str(args.p) != "None"):
+            for i in range(0, len(ips)):
+                time.sleep(1)
+                print("ping ip:" + str(ips[i]))
+                pings[str(ips[i])] = 1
+                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+                t1.start()
+            t2 = threading.Thread(target=printData)
+            t2.start()
 
     if str(args.ip) != "None":
         print(args.ip)
