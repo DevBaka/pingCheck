@@ -30,9 +30,13 @@ from array import *
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
 #übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
 
+#länge für die liste 'pingData' festlegen. Z.b eine if abfrage...if(pings[address] <= 10): pings[address] = 0;done;
+
+
 
 ips = []
 #data = [{"id":0, "ip":"here stands ips", "icmp":"icmp data", "ptime":"ptime data", "plost": "plost data", "rip": "rip data"},]
+
 data = {}
 data2 = []
 pingData = {}
@@ -112,9 +116,20 @@ def ping(threadName, delay, address, id):
             #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip), str(domain[0][0])
             #data[id][t] = str(t), str(icmp), str(ptime), str(rip)
             #data.extend(id, [t, icmp, ptime, rip])
-            data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) +  ":" +  str(plost) + ":" + str(rip) + ":" +  str(domain[0][0])
-            pingData[address + ":" + str(pings[address])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
+            #data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) +  ":" +  str(plost) + ":" + str(rip) + ":" +  str(domain[0][0])
+            #pingData[address + ":" + str(pings[address])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
 
+            pingData[address + ":" + str(pings[address])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
+            #print("ping!2: " + str(address) + ":" + str(pings[address]))
+            pings[str(address)] = pings[str(address)] + 1
+
+            #if(address == "10.0.0.254"):
+                #print("maybe ending ENDLINE 254!!!!11einsElfelf!!1111!")
+             #   if(pings[address] > 0):
+             #       pingData[address + ":1"] = "id:" + str(id), str(t), str(icmp), str(ptime), str(plost), str(rip)
+             #   if(pings[address] <= 0):
+             #       pings[address] = 1
+             #       pingData[address + ":1"] = "id:" + str(id), str(t), str(icmp), str(ptime), str(plost), str(rip)
 
             #pingData[address + ""]
             #data2.append()
@@ -123,10 +138,13 @@ def ping(threadName, delay, address, id):
             #print("no domain vorhanden")
             #data[id][t] = str(t), str(icmp), str(ptime), str(plost), str(rip)
             #data.extend(id,[t,icmp,ptime,rip])
-            data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) + ":" + str(plost) + ":" +str(rip)
-            print("pings[" +  str(address) +"]: " + str(pings[address]))
+            #data[address + ":" + str(id)] = str(t) + ":" + str(icmp) + ":" + str(ptime) + ":" + str(plost) + ":" +str(rip)
+            #print("pings[" +  str(address) +"]: " + str(pings[address]))
+            #print("ping!: " + pings[address])
             pingData[address + ":" + str(pings[address])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
             pings[address] = pings[address] + 1
+            #if(address == "10.0.0.223"):
+            #    print("maybe ending ENDLINE 223!!!!11einsElfelf!!1111!")
         #time.sleep(delay)
 
 #def ping()
@@ -226,17 +244,16 @@ def printData():
         print("len data: " + str(len(pingData)))
         print("len ips: " + str(len(ips)))
         print("data1: " + str(pingData['10.0.0.1:1']))
-        #print("data1: " + str(data[0][1]))
-        #print("data2: " + str(data[2]))
-        #print(str(data))
-        #for i in range(len(data)):
-        #    #print("Data" + str(i) + ": " + str(data[]) + ":" + str(data[i][1]))
-        #    time.sleep(1)
-        #    for c in i:
-        #        #print("data: " + str(data[i]))
-        #        print(c, end= " ")
-        #        time.sleep(1)
-        #print("data: " + str(data))
+        for i in range(0,len(ips)):
+            b = pings[ips[i]] - 1
+            if(r <= 0):
+                b = 1
+            #print("r:" + str(r) + "some: " + str(pingData[ips[i] + ":" + str(r)]))
+            try:
+                print("i:" + ips[i] + " ping: " + str(pings[ips[i]] - 1) + ":" + str(pings[ips[i]]) + "-" + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1 )]))
+            except:
+                print("error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1))
+
         time.sleep(5)
 
 
@@ -279,12 +296,12 @@ def main():
                 time.sleep(1)
                 #pingOnly("ping" + str(i), 1, str(ips[i]))
                 print("ping ip: " + str(ips[i]))
-                pings[str(ips[i])] = 0
+                pings[str(ips[i])] = 1
                 #thread.start_new_thread(ping, ("ping" + str(i), 1, str(ips[i])))
                 #thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
                 t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
                 t1.start()
-
+            print("ips: " + str(ips))
             t2 = threading.Thread(target=printData)
             t2.start()
 
