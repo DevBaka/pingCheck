@@ -4,14 +4,11 @@ import subprocess
 import multiprocessing.dummy
 import multiprocessing
 import re
-import _thread as thread
 import time
 import socket
-import getopt
 import argparse, sys
 import threading
 from subprocess import check_output
-from array import *
 
 #TODO:
 #regex to get // check domain
@@ -162,54 +159,7 @@ def portCheck(address, port):
         pass
     return False
 
-def main2():
-    print("type !h to list all Commands")
-    #ping("google.de")
 
-    rpings = 0
-    key = input("command: ")
-    while key != "!exit":
-        key = input("command: ")
-        if(key == "!h"):
-            help()
-        if(key == "!pingOnly"):
-            addr = input("domain")
-            rpings = rpings + 1
-            #thread.start_new_thread(pingOnly, ("ping" + str(rpings),10,addr))
-        if(key == "!tping"):
-            thread.start_new_thread(pingOnly, ("ping2", 3, "www.devbaka.de"))
-            thread.start_new_thread(pingOnly, ("ping1", 3, "google.com"))
-        if(key == "!port"):
-            addr = input("domain")
-            port = int(input("port"))
-            print("port " + str(port) + " is " + str(portCheck(addr, port)) + " on host " + addr)
-
-
-            #pingOnly(addr)
-    #ping()
-
-def main3(argv):
-    domain = ""
-    ipaddr = "0.0.0.0"
-    subnet = "0"
-    try:
-        opts, args = getopt.getopt(argv,"di:s:",["domain=","ip=","subnet="])
-    except getopt.GetoptError:
-        print('nettool.py -h')
-        sys.exit(2)
-
-    for opt, arg in opts:
-        if opt == "-h":
-            help()
-            sys.exit()
-        elif opt in("-d", "--domain"):
-            domain = arg
-            print("domain: " + domain + " arg: " + str(arg))
-            pingOnly("ping1", 1,domain)
-        elif opt in ("-s", "--subnet"):
-            subnet = arg
-        elif opt in ("-i", "--ip"):
-            ipaddr = arg
 def getLocalIPS():
     ips = check_output(['hostname', '--all-ip-addresses'])
     #print("ips: " + str(ips))
@@ -224,6 +174,7 @@ def getLocalIPS():
     #print("nt: " + str(networks) + "len: " + str(len(networks)))
     for y in range(0, len(networks)):
         print("network"+ str(y) + ": " + str(networks[y]))
+
 def getIPS(network, start, end):
     for ping in range(start, end):
         address = network + str(ping)
@@ -256,10 +207,10 @@ def ping_range(network,start,end):
 def printData():
     r = 0
     while r != 1:
-        print("data: " + str(pingData))
+        #print("data: " + str(pingData))
         print("len data: " + str(len(pingData)))
         print("len ips: " + str(len(ips)))
-        print("data1: " + str(pingData['10.0.0.1:1']))
+        #print("data1: " + str(pingData['10.0.0.1:1']))
         for i in range(0,len(ips)):
             b = pings[ips[i]] - 1
             if(r <= 0):
@@ -299,9 +250,6 @@ def main():
         print(args.d)
         pingOnly("ping2", 1, args.d)
 
-    #if str(args.l) != "None":
-    #    getLocalIPS()
-
     if str(args.localIP) != "None":
         getLocalIPS()
 
@@ -325,12 +273,7 @@ def main():
 
     if str(args.ip) != "None":
         print(args.ip)
-        #getIPS(str(args.ip),0,255)
-        #thread.start_new_thread(getIPS, (str(args.ip), 0,50))
-        #thread.start_new_thread(getIPS, (str(args.ip), 51,100))
-        #thread.start_new_thread(getIPS, (str(args.ip), 101,150))
-        #thread.start_new_thread(getIPS, (str(args.ip), 151,200))
-        #thread.start_new_thread(getIPS, (str(args.ip), 201,255))
+
         ping_range(str(args.ip),0,255)
         print("ips: " + str(ips))
         print("args.p: " + str(args.p))
@@ -338,11 +281,8 @@ def main():
         if str(args.p) != "None":
             for i in range(0,len(ips)):
                 time.sleep(1)
-                #pingOnly("ping" + str(i), 1, str(ips[i]))
                 print("ping ip: " + str(ips[i]))
                 pings[str(ips[i])] = 1
-                #thread.start_new_thread(ping, ("ping" + str(i), 1, str(ips[i])))
-                #thread.start_new_thread(pingOnly, ("ping" + str(i), 1, str(ips[i])))
                 t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
                 t1.start()
             print("ips: " + str(ips))
@@ -351,7 +291,5 @@ def main():
 
 
 if __name__ == '__main__':
-    #main()
-   #main3(sys.argv[1:])
     main()
 
