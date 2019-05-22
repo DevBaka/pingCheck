@@ -9,6 +9,7 @@ import socket
 import argparse, sys
 import threading
 from subprocess import check_output
+from netaddr import *
 
 #TODO:
 #regex to get // check domain
@@ -41,6 +42,11 @@ pingData = {}
 pings = {}
 localIPs = []
 networks = []
+
+snetwork = ""
+sbroadcast = ""
+ssize = 0
+
     #pingData[0][0] = 0
 
 def help():
@@ -175,6 +181,28 @@ def getLocalIPS():
     for y in range(0, len(networks)):
         print("network"+ str(y) + ": " + str(networks[y]))
 
+#def searchNetworks():
+#    network = ["192.168.178.1", ]
+#    success = subprocess.call(['ping', '-c', '1', ip])
+#    if success:
+#        print("{} responded".format(ip))
+#        #ips.append(ip)
+#    else:
+#        print("{} did not respond".format(ip))
+#        ips.append(ip)
+#        #data.append(())
+#    return success
+
+def subnet(address):
+    sip = IPNetwork(address)
+    snetwork = str(sip.network)
+    sbroadcast = (sip.broadcast)
+    ssize = sip.size
+    print("subnet(" + address + ") snetwork=" + str(snetwork) + " ssize=" + str(ssize))
+
+
+
+
 def getIPS(network, start, end):
     for ping in range(start, end):
         address = network + str(ping)
@@ -289,6 +317,56 @@ def main():
             t2 = threading.Thread(target=printData)
             t2.start()
 
+    if str(args.subnet) != "None":
+        #getLocalIPS()
+        print("start")
+        #for y in range(0, len(networks)):
+        #for y in range(0, size):
+        #    print("network" + str(y) + ": " + str(networks[y]))
+
+
+        #network = ".".join(str(localIPs[x]).split(".")[0:-1]) + "."
+
+
+        sip = IPNetwork(args.subnet)
+        snetwork = str(sip.network)
+        rnetwork = ".".join(str(snetwork).split(".")[0:-1]) + "."
+        sbroadcast = (sip.broadcast)
+        ssize = sip.size
+        print("subnet(" + args.subnet + ") snetwork=" + str(rnetwork) + " ssize=" + str(ssize))
+
+        print("input: " + args.subnet)
+        #subnet(args.subnet)
+        print("snetwork: " + snetwork + " ssize: " + str(ssize))
+        ping_range(rnetwork, 0, ssize)
+        print("allIPS: " + str(ips))
+        #if(str(args.p) != "None"):
+        for i in range(0, len(ips)):
+            time.sleep(1)
+            print("ping ip:" + str(ips[i]))
+            pings[str(ips[i])] = 1
+            t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+            t1.start()
+        t2 = threading.Thread(target=printData)
+        t2.start()
+
+    else:
+        #subnet(str(args.subnet))
+        getLocalIPS()
+        print("start")
+        for y in range(0, len(networks)):
+            print("network" + str(y) + ": " + str(networks[y]))
+            ping_range(networks[y], 0, 255)
+        print("allIPS: " + str(ips))
+        if(str(args.p) != "None"):
+            for i in range(0, len(ips)):
+                time.sleep(1)
+                print("ping ip:" + str(ips[i]))
+                pings[str(ips[i])] = 1
+                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+                t1.start()
+            t2 = threading.Thread(target=printData)
+            t2.start()
 
 if __name__ == '__main__':
     main()
