@@ -8,6 +8,7 @@ import time
 import socket
 import argparse, sys
 import threading
+from netifaces import interfaces, ifaddresses, AF_INET
 from subprocess import check_output
 
 #TODO:
@@ -161,8 +162,16 @@ def portCheck(address, port):
 
 
 def getLocalIPS():
-    ips = check_output(['hostname', '--all-ip-addresses'])
-    #print("ips: " + str(ips))
+    #ips = check_output(['hostname', '--all-ip-addresses'])
+    #ips = ""
+    #for ifaceName in interfaces():
+    #	addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}])]
+	#addresses = [i['addr'] for i in ifaddresses(ifaceName.setdefault(AF_INET, [{'addr':'No IP addr'}])]
+    #    ips = str(ips) + " " + str(addresses)
+    ips = ""
+    for ifaceName in interfaces():
+        addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}])]
+        ips = str(ips) + " " + str(addresses)
     localIPs = re.findall(r'[0-9]+(?:\.[0-9]+){3}', str(ips))
     #print("localIPS: " + str(localIPs[0]))
     for x in range(0, len(localIPs)):
@@ -270,6 +279,23 @@ def main():
                 t1.start()
             t2 = threading.Thread(target=printData)
             t2.start()
+
+    else:
+        getLocalIPS()
+        print("start")
+        for y in range(0, len(networks)):
+            print("network" + str(y) + ": " + str(networks[y]))
+            ping_range(networks[y], 0, 255)
+        print("allIPS: " + str(ips))
+        for i in range(0, len(ips)):
+            time.sleep(1)
+            print("ping ip:" + str(ips[i]))
+            pings[str(ips[i])] = 1
+            t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+            t1.start()
+        t2 = threading.Thread(target=printData)
+        t2.start()
+
 
     if str(args.ip) != "None":
         print(args.ip)
