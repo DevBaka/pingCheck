@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 import subprocess
 import multiprocessing.dummy
 import multiprocessing
@@ -213,15 +214,17 @@ def getPing(ip):
     return success
 
 def ping_range(network,start,end):
-    num_threads = 4 * multiprocessing.cpu_count()
+    num_threads = 32 * multiprocessing.cpu_count()
     p = multiprocessing.dummy.Pool(num_threads)
     p.map(getPing, [network + str(x) for x in range(start,end)])
     #ips.append(network + str(x))
 
 def printData():
+
     r = 0
     while r != 1:
         #print("data: " + str(pingData))
+        os.system("clear")
         print("len data: " + str(len(pingData)))
         print("len ips: " + str(len(ips)))
         #print("data1: " + str(pingData['10.0.0.1:1']))
@@ -260,7 +263,7 @@ def main():
 
     args= parser.parse_args()
     print(args)
-    print(sys)
+    #print(sys)
 
     if str(args.domain) != "None":
         print(args.domain)
@@ -289,9 +292,6 @@ def main():
                 t1.start()
             t2 = threading.Thread(target=printData)
             t2.start()
-
-
-
 
     if str(args.ip) != "None":
         print(args.ip)
@@ -366,26 +366,8 @@ def main():
             t2 = threading.Thread(target=printData)
             t2.start()
 
-
-
-    #if str(args.sip != "None"):
-    #    if '/' in str(args.sip):
-    #        address_val, _cidr = str(args.sip).split('/')
-    #        _address = map(int, address_val.split('.'))
-    #        print("addr: " + str(address_val))
-    #
-    #    else:
-    #        _address = map(int, str(args.sip).split('.'))
-    #        #print("addr: " + str(address_val))
-    #        #_cidr = cdir
-    #    #binary_IP = _dec_to_binary(self._address)
-    #    binary_Mask = None
-    #    negation_Mask = None
-    #    network = None
-    #    broadcast = None
-
-
-    else:
+    if len(sys.argv) == 1:
+        print("test")
         getLocalIPS()
         print("start")
         for y in range(0, len(networks)):
