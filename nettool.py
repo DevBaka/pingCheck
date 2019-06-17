@@ -25,6 +25,8 @@ from subprocess import check_output
 #curses: https://de.wikibooks.org/wiki/Python_unter_Linux:_Curses
 #nmap: https://www.programcreek.com/python/example/92225/nmap.PortScanner
 
+#subnet: https://diego.assencio.com/?index=85e407d6c771ba2bc5f02b17714241e2
+
 #mittelwert vom packet loss und von der latenz(ms) berechnen lassen
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
 #übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
@@ -288,21 +290,7 @@ def main():
             t2 = threading.Thread(target=printData)
             t2.start()
 
-    else:
-        getLocalIPS()
-        print("start")
-        for y in range(0, len(networks)):
-            print("network" + str(y) + ": " + str(networks[y]))
-            ping_range(networks[y], 0, 255)
-        print("allIPS: " + str(ips))
-        for i in range(0, len(ips)):
-            time.sleep(0.1)
-            print("start ping Thread for:" + str(ips[i]))
-            pings[str(ips[i])] = 1
-            t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
-            t1.start()
-        t2 = threading.Thread(target=printData)
-        t2.start()
+
 
 
     if str(args.ip) != "None":
@@ -325,16 +313,94 @@ def main():
 
     if str(args.sip != "None"):
         if '/' in str(args.sip):
-            address_val, _cidr = str(args.sip).split('/')
-            _address = map(int, address_val.split('.'))
-        else:
-            _address = map(int, str(args.sip).split('.'))
-            #_cidr = cdir
-        #binary_IP = _dec_to_binary(self._address)
-        binary_Mask = None
-        negation_Mask = None
-        network = None
-    broadcast = None
+            # Get address string and CIDR string from command line
+            #(addrString, cidrString) = str(args.sip).split('/')
+            (addrString, cidrString) = str(args.sip).split('/')
+            # Split address into octets and turn CIDR into int
+            addr = addrString.split('.')
+            cidr = int(cidrString)
+            print("addr: " + str(addr))
+            print("cidr: " + str(cidr))
+
+            # Initialize the netmask and calculate based on CIDR mask
+            mask = [0, 0, 0, 0]
+            for i in range(cidr):
+                try:
+                    mask[i // 8] = mask[i // 8] + (1 << (7 - i % 8))
+                    #print("mask: " + str(mask[i // 8]))
+                except:
+                    print("some error")
+
+            # Initialize net and binary and netmask with addr to get network
+            net = []
+            for i in range(4):
+                net.append(int(addr[i]) & mask[i])
+
+            # Duplicate net into broad array, gather host bits, and generate broadcast
+            broad = list(net)
+            brange = 32 - cidr
+            for i in range(brange):
+                broad[3 - i // 8] = broad[3 - i // 8] + (1 << (i % 8))
+
+            # Print information, mapping integer lists to strings for easy printing
+            print("Address:   ", addrString)
+            print("Netmask:   ", ".".join(map(str, mask)))
+            print("Network:   ", ".".join(map(str, net)))
+            print("Broadcast: ", ".".join(map(str, broad)))
+            print("t network: " + str(net[2]))
+            print("b network: " + str(broad[2]))
+            netint = broad[2] - net[2]
+            print("networks: " + str(netint))
+            for i in range(netint):
+                print("network " + str(i + 1))
+                networkip = str(net[0]) + "." + str(net[1]) + "." + str(net[2] + i ) + "."
+                print("network: " + networkip)
+                ping_range(networkip, 0, 255)
+
+            for i in range(0, len(ips)):
+                time.sleep(1)
+                print("ping ip:" + str(ips[i]))
+                pings[str(ips[i])] = 1
+                t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+                t1.start()
+            t2 = threading.Thread(target=printData)
+            t2.start()
+
+
+
+    #if str(args.sip != "None"):
+    #    if '/' in str(args.sip):
+    #        address_val, _cidr = str(args.sip).split('/')
+    #        _address = map(int, address_val.split('.'))
+    #        print("addr: " + str(address_val))
+    #
+    #    else:
+    #        _address = map(int, str(args.sip).split('.'))
+    #        #print("addr: " + str(address_val))
+    #        #_cidr = cdir
+    #    #binary_IP = _dec_to_binary(self._address)
+    #    binary_Mask = None
+    #    negation_Mask = None
+    #    network = None
+    #    broadcast = None
+
+
+    else:
+        getLocalIPS()
+        print("start")
+        for y in range(0, len(networks)):
+            print("network" + str(y) + ": " + str(networks[y]))
+            ping_range(networks[y], 0, 255)
+        print("allIPS: " + str(ips))
+        for i in range(0, len(ips)):
+            time.sleep(0.1)
+            print("start ping Thread for:" + str(ips[i]))
+            pings[str(ips[i])] = 1
+            t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
+            t1.start()
+        t2 = threading.Thread(target=printData)
+        t2.start()
+
 
 if __name__ == '__main__':
     main()
