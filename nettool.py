@@ -96,7 +96,7 @@ def ping(threadName, delay, address, id):
     t = 0
     c = 0
     while c != 1:
-        time.sleep(1.5)
+        time.sleep(0.5)
         t = t + 1
         p = subprocess.Popen(["ping", address, "-c 1"], stdout = subprocess.PIPE)
         out = str(p.communicate()[0])
@@ -171,7 +171,10 @@ def getLocalIPS():
     ips = ""
     for ifaceName in interfaces():
         addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}])]
-        ips = str(ips) + " " + str(addresses)
+        if "127.0.0" in str(addresses):
+            print("127 dont add")
+        else:
+            ips = str(ips) + " " + str(addresses)
     localIPs = re.findall(r'[0-9]+(?:\.[0-9]+){3}', str(ips))
     #print("localIPS: " + str(localIPs[0]))
     for x in range(0, len(localIPs)):
@@ -227,7 +230,12 @@ def printData():
             #print("r:" + str(r) + "some: " + str(pingData[ips[i] + ":" + str(r)]))
             try:
                 #print("i:" + ips[i] + " ping: " + str(pings[ips[i]] - 1) + ":" + str(pings[ips[i]]) + "-" + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1 )]))
-                print("ip: " + ips[i] + ":" + str(pings[ips[i]] - 1) + " time: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]) + " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
+                #sip = str(pings[ips[i]] -1).ljust(15, ".")
+                sip = str(ips[i]).ljust(15," ")
+                stime =  str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]).ljust(10," ")
+                #print("ip: " + ips[i] + ":" + str(pings[ips[i]] - 1) + " time: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]) + " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
+                print("ip: " + sip +  " time: " + stime +  " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
+
             except:
                 print("error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1))
 
@@ -245,6 +253,7 @@ def main():
     parser.add_argument("--localIP", help="get local ips")
     parser.add_argument("-lip", help="get local ips")
     parser.add_argument("-a", help="auto scan")
+    parser.add_argument("--sip", help="subnet ip (x.x.x.x/xx")
     #parser.add_argument("--help", help="show the help")
 
     args= parser.parse_args()
@@ -261,7 +270,6 @@ def main():
 
     if str(args.localIP) != "None":
         getLocalIPS()
-
 
     if str(args.a) != "None":
         getLocalIPS()
@@ -288,8 +296,8 @@ def main():
             ping_range(networks[y], 0, 255)
         print("allIPS: " + str(ips))
         for i in range(0, len(ips)):
-            time.sleep(1)
-            print("ping ip:" + str(ips[i]))
+            time.sleep(0.1)
+            print("start ping Thread for:" + str(ips[i]))
             pings[str(ips[i])] = 1
             t1 = threading.Thread(target=ping, args=("ping" + str(i), 1, str(ips[i]), i))
             t1.start()
@@ -315,6 +323,18 @@ def main():
             t2 = threading.Thread(target=printData)
             t2.start()
 
+    if str(args.sip != "None"):
+        if '/' in str(args.sip):
+            address_val, _cidr = str(args.sip).split('/')
+            _address = map(int, address_val.split('.'))
+        else:
+            _address = map(int, str(args.sip).split('.'))
+            #_cidr = cdir
+        #binary_IP = _dec_to_binary(self._address)
+        binary_Mask = None
+        negation_Mask = None
+        network = None
+    broadcast = None
 
 if __name__ == '__main__':
     main()
