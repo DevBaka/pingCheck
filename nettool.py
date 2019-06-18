@@ -246,8 +246,8 @@ def printData():
     while r != 1:
         #print("data: " + str(pingData))
         os.system("clear")
-        print("len data: " + str(len(pingData)))
-        print("len ips: " + str(len(ips)))
+        #print("len data: " + str(len(pingData)))
+        #print("len ips: " + str(len(ips)))
         #print("data1: " + str(pingData['10.0.0.1:1']))
         leer = ""
         print(leer.ljust(75, "_"))
@@ -270,15 +270,24 @@ def printData():
                     #shostname = str(pingData[ips[i] + ":" + str(pings[ips[i]] - 1)][6])
                     #try:
                     #shostname = str(nm[ips[i]].hostname())
-                    shostname = hostnames[ips[i]]
-                    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname)
-                    #except:
-                    #    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " | error hostname | " + str(ips[i]))
+                    try:
+                        shostname = hostnames[ips[i]]
+                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname)
+                    except:
+                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " | error hostname | " + str(ips[i]))
+                        # maybe here start a thread for failed hostname scans
+                        #if nms == 1:
+                        #    nm.scan(hosts=str(sip), arguments='-sP')
+                        #    try:
+                        #        #print("hostname: " + nm[sip].hostname())
+                        #        hostnames[sip] = nm[sip].hostname()
+                        #    except:
+                        #print("error hostname")
                 else:
-                    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |")
+                    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |test")
 
             except:
-                print("|                     error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1) + "                   | ")
+                print("|                  error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1) + "                   | ")
         print(leer.ljust(75, "–"))
         time.sleep(5)
 
@@ -295,6 +304,8 @@ def main():
     parser.add_argument("-lip", help="get local ips")
     parser.add_argument("-a", help="auto scan")
     parser.add_argument("--sip", help="subnet ip (x.x.x.x/xx")
+    parser.add_argument("--hostname", help="show hostnames / slower start")
+
     #parser.add_argument("--help", help="show the help")
 
     args= parser.parse_args()
