@@ -231,7 +231,7 @@ def printData():
         print("len ips: " + str(len(ips)))
         #print("data1: " + str(pingData['10.0.0.1:1']))
         leer = ""
-        print(leer.ljust(67, "_"))
+        print(leer.ljust(75, "_"))
         for i in range(0,len(ips)):
             b = pings[ips[i]] - 1
             if(r <= 0):
@@ -242,12 +242,13 @@ def printData():
                 #sip = str(pings[ips[i]] -1).ljust(15, ".")
                 sip = str(ips[i]).ljust(15," ")
                 stime =  str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]).ljust(10," ")
+                splost = str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]).ljust(10," ")
                 #print("ip: " + ips[i] + ":" + str(pings[ips[i]] - 1) + " time: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]) + " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
-                print("| ip: " + sip +  " |    time: " + stime +  " | packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) + " |" )
+                print("| ip: " + sip +  " |    time: " + stime +  " |     packet lost: " + splost + " |" )
 
             except:
-                print("error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1))
-        print(leer.ljust(67, "–"))
+                print("|                     error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1) + "                   | ")
+        print(leer.ljust(75, "–"))
         time.sleep(5)
 
 
