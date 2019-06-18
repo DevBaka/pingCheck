@@ -13,6 +13,9 @@ from netifaces import interfaces, ifaddresses, AF_INET
 import nmap
 from subprocess import check_output
 
+
+# https://aur.archlinux.org/packages/python-nmap/
+
 #TODO:
 #regex to get // check domain
 #regex to read ttl
@@ -33,6 +36,7 @@ from subprocess import check_output
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
 #übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
 
+
 #länge für die liste 'pingData' festlegen. Z.b eine if abfrage...if(pings[address] <= 10): pings[address] = 0;done;
 
 nm = nmap.PortScanner()
@@ -47,6 +51,7 @@ pings = {}
 localIPs = []
 networks = []
 hostnames = {}
+osystems = {}
     #pingData[0][0] = 0
 
 def help():
@@ -272,17 +277,18 @@ def printData():
                     #shostname = str(nm[ips[i]].hostname())
                     try:
                         shostname = hostnames[ips[i]]
-                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname)
+                        sosystem = osystems[ips[i]]
+                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname + " | " + sosystem)
                     except:
                         print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " | error hostname | " + str(ips[i]))
                         # maybe here start a thread for failed hostname scans
                         #if nms == 1:
-                        #    nm.scan(hosts=str(sip), arguments='-sP')
+                        #    nm.scan(hosts=str(sip), arguments='-Pn')
                         #    try:
                         #        #print("hostname: " + nm[sip].hostname())
                         #        hostnames[sip] = nm[sip].hostname()
                         #    except:
-                        #print("error hostname")
+                        #        print("error hostname")
                 else:
                     print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |test")
 
@@ -424,12 +430,21 @@ def main():
         for i in range(0, len(ips)):
             nms = 1
             if nms == 1:
-                nm.scan(hosts=str(ips[i]), arguments='-sP')
                 try:
+                    nm.scan(hosts=str(ips[i]), arguments='-sP -p 0 -O')
                     print("hostname: " + nm[ips[i]].hostname())
                     hostnames[ips[i]] = nm[ips[i]].hostname()
+                    #osystems[ips[i]] = nm[ips[i]]['osmatch'][0]['osclass'][0]['osfamily']
                 except:
                     print("error hostname")
+                    try:
+                        nm.scan(hosts=str(ips[i]), arguments='-Pn -p 0 -O')
+                        print("hostname: " + nm[ips[i]].hostname())
+                        hostnames[ips[i]] = nm[ips[i]].hostname()
+                        #osystems[ips[i]] = nm[ips[i]]['osmatch'][0]['osclass'][0]['osfamily']
+                    except:
+                        print("fatal error hostname")
+
                 #time.sleep(1)
             time.sleep(0.1)
             print("start ping Thread for:" + str(ips[i]))
