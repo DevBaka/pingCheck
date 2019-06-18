@@ -10,6 +10,7 @@ import socket
 import argparse, sys
 import threading
 from netifaces import interfaces, ifaddresses, AF_INET
+import nmap
 from subprocess import check_output
 
 #TODO:
@@ -25,7 +26,7 @@ from subprocess import check_output
 #regex test: https://rubular.com/r/uEDoEZwY7U
 #curses: https://de.wikibooks.org/wiki/Python_unter_Linux:_Curses
 #nmap: https://www.programcreek.com/python/example/92225/nmap.PortScanner
-
+#some sockets: https://www.programcreek.com/python/example/266/socket.gethostname
 #subnet: https://diego.assencio.com/?index=85e407d6c771ba2bc5f02b17714241e2
 
 #mittelwert vom packet loss und von der latenz(ms) berechnen lassen
@@ -34,7 +35,7 @@ from subprocess import check_output
 
 #länge für die liste 'pingData' festlegen. Z.b eine if abfrage...if(pings[address] <= 10): pings[address] = 0;done;
 
-
+nm = nmap.PortScanner()
 
 ips = []
 #data = [{"id":0, "ip":"here stands ips", "icmp":"icmp data", "ptime":"ptime data", "plost": "plost data", "rip": "rip data"},]
@@ -45,6 +46,7 @@ pingData = {}
 pings = {}
 localIPs = []
 networks = []
+hostnames = {}
     #pingData[0][0] = 0
 
 def help():
@@ -124,7 +126,13 @@ def ping(threadName, delay, address, id):
             #pingData[address + ":" + str(pings[address])]= "id:" + str(id) , str(t) , str(icmp), str(ptime),str(plost),str(rip)
             if len(pingData) > 1500:
                 pingData.clear()
-            pingData[address + ":" + str(pings[address])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip)
+
+            nms = 1
+            #if nms == 1:
+                #nm.scan(address)
+             #   pingData[address + ":" + str(pings[address])] = "id:" + str(id) ,str(t),str(icmp),str(ptime),str(plost),str(rip), str(nm[address].hostname())
+            #else:
+            pingData[address + ":" + str(pings[address])] = "id:" + str(id), str(t), str(icmp), str(ptime), str(plost), str(rip)
 
             #print("ping!2: " + str(address) + ":" + str(pings[address]))
             pings[str(address)] = pings[str(address)] + 1
@@ -178,6 +186,7 @@ def getLocalIPS():
         addresses = [i['addr'] for i in ifaddresses(ifaceName).setdefault(AF_INET, [{'addr':'No IP addr'}])]
         if "127.0.0" in str(addresses):
             print("127 dont add")
+            print("after addr: " + str(addresses))
         else:
             ips = str(ips) + " " + str(addresses)
     localIPs = re.findall(r'[0-9]+(?:\.[0-9]+){3}', str(ips))
@@ -191,6 +200,9 @@ def getLocalIPS():
     #print("nt: " + str(networks) + "len: " + str(len(networks)))
     for y in range(0, len(networks)):
         print("network"+ str(y) + ": " + str(networks[y]))
+        nms = 1
+        #if nms == 1:
+        #    nm.scan(hosts=str(networks[y]) + ".0/24", arguments='-sP')
 
 def getIPS(network, start, end):
     for ping in range(start, end):
@@ -199,6 +211,9 @@ def getIPS(network, start, end):
         if res == 0:
             print("ping to", address, "OK")
             ips.append(address)
+            #nms = 1
+            #if nms == 1:
+            #    nm.scan(hosts=address, arguments='-sP')
         elif res == 2:
             print("no response from", address)
         else:
@@ -212,6 +227,10 @@ def getPing(ip):
     else:
         print("{} did not respond".format(ip))
         ips.append(ip)
+        #nms = 1
+        #if nms == 1:
+        #    nm.scan(hosts=str(ip), arguments='-sP')
+        #    time.sleep(3)
         #data.append(())
     return success
 
@@ -243,8 +262,20 @@ def printData():
                 sip = str(ips[i]).ljust(15," ")
                 stime =  str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]).ljust(10," ")
                 splost = str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]).ljust(10," ")
+                #shostname = str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][6])
                 #print("ip: " + ips[i] + ":" + str(pings[ips[i]] - 1) + " time: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][3]) + " packet lost: " + str(pingData[ips[i] + ":" + str(pings[ips[i]] -1)][4]) )
-                print("| ip: " + sip +  " |    time: " + stime +  " |     packet lost: " + splost + " |" )
+                #print("| ip: " + sip +  " |    time: " + stime +  " |     packet lost: " + splost + " |")
+                nms = 1
+                if nms == 1:
+                    #shostname = str(pingData[ips[i] + ":" + str(pings[ips[i]] - 1)][6])
+                    #try:
+                    #shostname = str(nm[ips[i]].hostname())
+                    shostname = hostnames[ips[i]]
+                    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname)
+                    #except:
+                    #    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " | error hostname | " + str(ips[i]))
+                else:
+                    print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |")
 
             except:
                 print("|                     error with ip: " + ips[i] + " ping: " + str(pings[ips[i]] - 1) + "                   | ")
@@ -380,6 +411,15 @@ def main():
             ping_range(networks[y], 0, 255)
         print("allIPS: " + str(ips))
         for i in range(0, len(ips)):
+            nms = 1
+            if nms == 1:
+                nm.scan(hosts=str(ips[i]), arguments='-sP')
+                try:
+                    print("hostname: " + nm[ips[i]].hostname())
+                    hostnames[ips[i]] = nm[ips[i]].hostname()
+                except:
+                    print("error hostname")
+                #time.sleep(1)
             time.sleep(0.1)
             print("start ping Thread for:" + str(ips[i]))
             pings[str(ips[i])] = 1
