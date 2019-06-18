@@ -35,7 +35,7 @@ from subprocess import check_output
 #mittelwert vom packet loss und von der latenz(ms) berechnen lassen
 #alle hosts im netzwerk gleichzeitig/durchgehend anpingen
 #übersicht der hosts mit dem zuletzt gemessenen daten, sowie den durchschnittswerten
-
+#https://stackoverflow.com/questions/27158046/remote-os-detection-in-python
 
 #länge für die liste 'pingData' festlegen. Z.b eine if abfrage...if(pings[address] <= 10): pings[address] = 0;done;
 
@@ -277,8 +277,8 @@ def printData():
                     #shostname = str(nm[ips[i]].hostname())
                     try:
                         shostname = hostnames[ips[i]]
-                        sosystem = osystems[ips[i]]
-                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname + " | " + sosystem)
+                        #sosystem = osystems[ips[i]]
+                        print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " |" + shostname + " | ")
                     except:
                         print("| ip: " + sip + " |    time: " + stime + " |     packet lost: " + splost + " | error hostname | " + str(ips[i]))
                         # maybe here start a thread for failed hostname scans
@@ -431,14 +431,14 @@ def main():
             nms = 1
             if nms == 1:
                 try:
-                    nm.scan(hosts=str(ips[i]), arguments='-sP -p 0 -O')
+                    nm.scan(hosts=str(ips[i]), arguments='-sP -p 0')
                     print("hostname: " + nm[ips[i]].hostname())
                     hostnames[ips[i]] = nm[ips[i]].hostname()
                     #osystems[ips[i]] = nm[ips[i]]['osmatch'][0]['osclass'][0]['osfamily']
                 except:
                     print("error hostname")
                     try:
-                        nm.scan(hosts=str(ips[i]), arguments='-Pn -p 0 -O')
+                        nm.scan(hosts=str(ips[i]), arguments='-Pn -p 0')
                         print("hostname: " + nm[ips[i]].hostname())
                         hostnames[ips[i]] = nm[ips[i]].hostname()
                         #osystems[ips[i]] = nm[ips[i]]['osmatch'][0]['osclass'][0]['osfamily']
